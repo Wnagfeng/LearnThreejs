@@ -1,0 +1,92 @@
+<!-- 渲染器详解 [Render] -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .canvasBox {
+            display: flex;
+        }
+
+        .cav1,
+        .cav2 {
+            border: 1px solid black;
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="canvasBox">
+        <canvas class="cav1"></canvas>
+        <canvas class="cav2"></canvas>
+    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        const scene = new THREE.Scene();
+        const loader = new THREE.TextureLoader();
+        loader.load("./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg", function (texture) {
+            scene.background = texture;
+        })
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        camera.position.x = 5;
+        camera.position.y = 5;
+        camera.lookAt(0, 0, 0);
+        // 创建渲染器
+        const renderer = new THREE.WebGLRenderer({
+            // 1.我们可以指定渲染到某个canvas上
+            canvas: document.querySelector(".cav1"),
+            // 2.我们可以开启抗锯齿，消除物体的边缘锯齿
+            antialias: true,
+        });
+        // 设置渲染器的大小
+        renderer.setSize(400, 400);
+        const cube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
+        const cube1 = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        );
+        cube1.position.x = 2;
+        cube1.position.y = 0.5;
+        scene.add(cube, cube1);//add方法可以添加多个物体
+        renderer.render(scene, camera);
+        // 添加动画
+        let angle = 0; //默认相机的角度
+        const animate = function () {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            cube1.rotation.x += 0.05;
+            cube1.rotation.y += 0.05;
+            // 相机的移动
+            const radius = 3;//相机的半径
+            camera.position.x = radius * Math.cos(angle);//x轴移动
+            camera.position.z = radius * Math.sin(angle);//z轴移动
+            camera.lookAt(0, 0, 0);//始终看向中心点
+            angle += 0.01;
+            renderer.render(scene, camera);
+        };
+        animate();
+    </script>
+
+</body>
+
+</html>

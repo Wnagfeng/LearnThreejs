@@ -1,0 +1,129 @@
+<!-- 几何体 [ConeGeometry——BufferGeometry] -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrbitControls——BufferGeometry</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls 模块
+        /* 
+         BufferGeometry 是一个缓存几何体，可以提高渲染效率。
+         通过 BufferGeometry 创建几何图形的步骤：
+         1. 创建 BufferGeometry 对象。
+         2. 设置几何体的顶点、线段、面、颜色、UV 坐标等数据。
+         3. 创建材质。
+         4. 创建物体。
+         5. 将物体加入场景。
+         6. 创建控制器。
+         7. 调用渲染器渲染。
+         ConeGeometry 和 BufferGeometry 是 Three.js 中的两种几何体表示方式，但它们在使用上有一些不同。
+
+        1. ConeGeometry
+        ConeGeometry 是一种具体的几何体类型，专门用于创建锥形对象。它提供了一些默认参数，例如底部半径、高度和段数。这使得创建锥体对象变得简单快捷。
+        例如：
+        const coneGeometry = new THREE.ConeGeometry(5, 20, 32);
+        DiffCopyInsert
+
+        2. BufferGeometry
+        BufferGeometry 是一种更通用和底层的几何体表示，允许开发者更灵活地控制顶点、面、颜色等属性。
+        它能够提高性能，因为 BufferGeometry 允许使用更少的内存和更快的渲染时间，适合复杂的场景和大量对象的使用。
+        适合需要自定义几何体结构和属性的情况，例如你在代码中定义了具体的顶点和颜色数组。
+        为什么使用 BufferGeometry？
+        性能优化：对于高效渲染，尤其是当需要渲染大量的几何体或复杂对象时，BufferGeometry 能够更好地利用 GPU。
+        灵活性：用户可以自定义几何体的结构，以满足特定需求，而不仅限于预定义的几何体类型。
+        顶点属性：可以为每个顶点设置不同的属性（例如颜色、法向量等），实现更复杂的材料和效果。
+        
+        3.总结
+        虽然 ConeGeometry 提供了方便的方式来创建锥形对象，但在需要更高性能和更多自定义选项时，BufferGeometry 是更推荐的选择。你可以根据项目的需求选择合适的几何体表示方式。
+        */
+
+        // 1. 创建场景
+        const scene = new THREE.Scene();
+
+        // 2. 创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(2, 30, 20);
+        camera.lookAt(0, 0, 0);
+
+        // 3. 创建渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 4. 创建网格帮助器
+        const gridHelper = new THREE.GridHelper(100, 10, 0xff0000);
+
+        // 5. 创建 BufferGeometry 对象
+        const geometry = new THREE.BufferGeometry();
+
+        // 6. 设置顶点数据
+        // 每个顶点都是由 x y z 三个坐标值组成的
+        const vertices = new Float32Array([
+            -1.0, -1.0, 1.0, // 顶点 1
+            1.0, -1.0, 1.0, // 顶点 2
+            1.0, 1.0, 1.0, // 顶点 3
+            1.0, 1.0, 1.0, // 顶点 4
+            -1.0, 1.0, 1.0, // 顶点 5
+            -1.0, -1.0, 1.0  // 顶点 6
+        ]);
+
+        // 7. 设置顶点属性
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
+        // 8. 设置颜色数据
+        const colors = new Float32Array([
+            1.0, 0.0, 0.0, // 红色
+            0.0, 1.0, 0.0, // 绿色
+            0.0, 0.0, 1.0, // 蓝色
+            1.0, 1.0, 0.0, // 黄色
+            1.0, 0.0, 1.0, // 品红
+            0.0, 1.0, 1.0  // 青色
+        ]);
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3)); // 设置颜色属性
+
+        // 9. 创建材质，并启用顶点颜色
+        const material = new THREE.MeshBasicMaterial({ vertexColors: true });
+
+        // 10. 创建物体
+        const mesh = new THREE.Mesh(geometry, material); // 创建网格物体
+
+        // 11. 将物体和网格帮助器加入场景
+        scene.add(mesh, gridHelper);
+
+        // 12. 创建控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        // 13. 将渲染器添加到页面中
+        document.body.appendChild(renderer.domElement);
+
+        // 14. 启用阻尼功能
+        controls.enableDamping = true;
+
+        // 15. 动画循环
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update(); // 更新相机位置和方向
+            renderer.render(scene, camera);
+        };
+        animate();
+    </script>
+</body>
+
+</html>

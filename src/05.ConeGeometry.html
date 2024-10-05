@@ -1,0 +1,78 @@
+<!-- 几何体 [ConeGeometry] -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrbitControls</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';// 导入OrbitControls模块
+        // 1.创建场景
+        const scene = new THREE.Scene();
+        // 2.创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(2, 30, 20);
+        camera.lookAt(0, 0, 0);
+        // 3.创建渲染器
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // 4.创建网格帮助器
+        const gridHelper = new THREE.GridHelper(100, 10, 0xff0000);
+        /* 
+        几何体也有三要素：
+        1.创建结构
+        2.创建材质
+        3.创建物体
+        ConeGeometry -- 圆锥体
+        我们在threejs中创建的几何体都是通过 new THREE.XXXGeometry() 来创建的。这种方式本质上就是调用构造函数，创建对应的几何体对象。
+        除此之外我们还可以通过BufferGeometry来创建几何体，BufferGeometry比Geometry更加高效，但是我们这里只介绍Geometry。
+         */
+        // 创建结构 几何体
+        const geometry = new THREE.PlaneGeometry(20, 20, 50, 50);
+        // 创建材质
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            wireframe: true,// 显示线框
+        });
+        // 创建物体
+        const cube = new THREE.Mesh(geometry, material);
+        // 加入场景
+        scene.add(cube, gridHelper);
+        // 5.创建控制器
+        const controls = new OrbitControls(camera, renderer.domElement);// 实例化OrbitControls对象
+        document.body.appendChild(renderer.domElement);
+        controls.enableDamping = true; // 开启阻尼功能
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();// 如果你开启了阻尼效果 你必须在animate函数中调用 controls.update() 来更新相机的位置和方向，因为他要不断计算每一帧的效果 才能让相机动起来。
+            renderer.render(scene, camera);
+        };
+        animate();
+
+
+
+
+    </script>
+
+</body>
+
+</html>

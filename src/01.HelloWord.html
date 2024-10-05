@@ -1,0 +1,83 @@
+<!-- 在Three.js中 最重要的三要素就是场景、相机、渲染器。 -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        // 1.创建场景
+        const scene = new THREE.Scene();
+        // 1.1设置背景颜色
+        // scene.background = new THREE.Color(0x000000);//十六进制颜色值
+        // scene.background = new THREE.Color("rgb(200, 200, 200)");//rgb颜色值
+        // scene.background = new THREE.Color("hsl(0, 0%, 100%)");//hsl颜色值
+        // 1.2设置贴图
+        const loader = new THREE.TextureLoader();
+        loader.load("./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg", function (texture) {
+            scene.background = texture;
+        })
+        // 2.创建相机(透视相机[PerspectiveCamera]) 后面会讲参数的含义
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // 2.1设置相机的位置
+        camera.position.z = 5;
+        camera.position.x = 3;
+        camera.position.y = 2;
+        // 2.2设置相机的视角
+        camera.lookAt(0, 0, 0);
+        // 3.创建渲染器
+        const renderer = new THREE.WebGLRenderer();
+        // 4.设置渲染器的大小
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // 5.设置背景颜色
+        renderer.setClearColor(0x000000, 1.0);
+
+        // 6.将渲染器添加到页面中
+        document.body.appendChild(renderer.domElement);
+        // 6.1创建一个物体
+        const cube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
+        const cube1 = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        );
+        cube1.position.x = 2;
+        cube1.position.y = 0.5;
+        // 6.2将物体添加到场景中
+        scene.add(cube, cube1);//add方法可以添加多个物体
+        // 7.将场景添加到渲染器中
+        renderer.render(scene, camera);
+        // 8.添加动画
+        const animate = function () {
+            requestAnimationFrame(animate);
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            cube1.rotation.x += 0.05;
+            cube1.rotation.y += 0.05;
+            renderer.render(scene, camera);
+        };
+        animate();
+    </script>
+
+</body>
+
+</html>
