@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!-- 相机详解 [camera] -->
 <html lang="en">
 
@@ -23,76 +24,76 @@
 <body>
     <script type="module">
         import * as THREE from 'three';
-        // 1.创建场景
+
+        // 1. 创建场景
         const scene = new THREE.Scene();
-        // 1.2设置贴图
+
+        // 1.2 设置贴图
         const loader = new THREE.TextureLoader();
         loader.load("./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg", function (texture) {
             scene.background = texture;
-        })
-        // 2.创建相机(透视相机[PerspectiveCamera]) 后面会讲参数的含义
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        // 2.1设置相机的位置
-        /*
-           相机类似于一个摄像头，位置决定了观察的视角，视角决定了观察的范围。 
-        比如我们在最开始绘制了一个物体和一个相机，我们发现我们不移动相机我们
-        无法看见物体，其实就是因为相机的视野和物体被绘制到了一个平面上，所以
-        我们需要移动相机来看见物体。   
-        */
+        });
 
-        camera.position.z = 5;
-        camera.position.x = 5;
-        camera.position.y = 5;
-        // 2.2设置相机的视角
-        /*
-          如果把相机比作人头的话，假设人头他只能直视，他脖子不能动，所以我们在移动人
-        头的xyz的时候，由于脖子不能动，我们一直只能向前看，很鸡肋，那么lookAt就是用
-        来移动人的脖子的，让脖子弯曲一点，等等一些操作吧。 
-        */
-        camera.lookAt(0, 0, 0);//0，0，0 表示中心点
-        // 3.创建渲染器
+        // 2. 创建相机 (透视相机)
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+        // 2.1 设置相机的位置
+        camera.position.set(5, 5, 5); // 设置相机的 x, y, z 坐标
+
+        // 2.2 设置相机的视角
+        camera.lookAt(0, 0, 0); // 视角指向原点
+
+        // 3. 创建渲染器
         const renderer = new THREE.WebGLRenderer();
-        // 4.设置渲染器的大小
+
+        // 4. 设置渲染器的大小
         renderer.setSize(window.innerWidth, window.innerHeight);
-        // 5.设置背景颜色
+
+        // 5. 设置背景颜色
         renderer.setClearColor(0x000000, 1.0);
 
-        // 6.将渲染器添加到页面中
+        // 6. 将渲染器添加到页面中
         document.body.appendChild(renderer.domElement);
-        // 6.1创建一个物体
+
+        // 6.1 创建物体
         const cube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshBasicMaterial({ color: 0xff0000 })
         );
+
         const cube1 = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshBasicMaterial({ color: 0x00ff00 })
         );
-        cube1.position.x = 2;
-        cube1.position.y = 0.5;
-        // 6.2将物体添加到场景中
-        scene.add(cube, cube1);//add方法可以添加多个物体
-        // 7.将场景添加到渲染器中
+        cube1.position.set(2, 0.5, 0); // 设置 cube1 的位置
+
+        // 6.2 将物体添加到场景中
+        scene.add(cube, cube1); // add 方法可以添加多个物体
+
+        // 7. 将场景添加到渲染器中
         renderer.render(scene, camera);
-        // 8.添加动画
-        let angle = 0; //默认相机的角度
+
+        // 8. 添加动画
+        let angle = 0; // 默认相机的角度
         const animate = function () {
             requestAnimationFrame(animate);
             cube.rotation.x += 0.01;
             cube.rotation.y += 0.01;
             cube1.rotation.x += 0.05;
             cube1.rotation.y += 0.05;
+
             // 相机的移动
-            const radius = 3;//相机的半径
-            camera.position.x = radius * Math.cos(angle);//x轴移动
-            camera.position.z = radius * Math.sin(angle);//z轴移动
-            camera.lookAt(0, 0, 0);//始终看向中心点
+            const radius = 3; // 相机的半径
+            camera.position.x = radius * Math.cos(angle); // x 轴移动
+            camera.position.z = radius * Math.sin(angle); // z 轴移动
+            camera.lookAt(0, 0, 0); // 始终看向中心点
+
             angle += 0.01;
             renderer.render(scene, camera);
         };
+
         animate();
     </script>
-
 </body>
 
 </html>
