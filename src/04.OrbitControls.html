@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <!-- 轨道控制器 [OrbitControls] -->
 <html lang="en">
 
@@ -23,49 +24,52 @@
 <body>
     <script type="module">
         import * as THREE from 'three';
-        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';// 导入OrbitControls模块
-        // 1.创建场景
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls 模块
+
+        // 1. 创建场景
         const scene = new THREE.Scene();
-        // 2.创建相机
+
+        // 2. 创建相机
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(2, 200, 20);
         camera.lookAt(0, 0, 0);
-        // 3.创建渲染器
-        const renderer = new THREE.WebGLRenderer({
-            antialias: true,
-        });
+
+        // 3. 创建渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        // 先创建坐标格辅助器
-        //                             坐标轴长度，网格线数量，颜色
+        document.body.appendChild(renderer.domElement); // 将渲染器添加到页面
+
+        // 4. 创建坐标格辅助器
         const gridHelper = new THREE.GridHelper(100, 10, 0xff0000);
 
+        // 5. 创建一个立方体
         const cube = new THREE.Mesh(
             new THREE.BoxGeometry(20, 20, 20),
-            new THREE.MeshBasicMaterial({ color: 367517 })
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 }) // 修改为标准十六进制颜色格式
         );
-        scene.add(cube, gridHelper);
-        const controls = new OrbitControls(camera, renderer.domElement);// 实例化OrbitControls对象
-        document.body.appendChild(renderer.domElement);
+
+        scene.add(cube, gridHelper); // 将立方体和坐标格添加到场景中
+
+        // 6. 实例化 OrbitControls 对象
+        const controls = new OrbitControls(camera, renderer.domElement);
 
         controls.enableDamping = true; // 开启阻尼功能
         /*
-        OrbitControls 控制相机的轨道
-           他本质上就是 移动相机的位置和方向,所以我们必须要写出animate函数来驱动相机的位置变化。如果你不驱动相机的位置变化，相机永远不会动。
-           如果你不想使用 animate函数来驱动相机，那么你可以监听 change 事件，然后手动更新相机的位置和方向。
-                   controls.addEventListener('change', () => renderer.render(scene, camera));// 监听change事件，渲染场景和相机
-         */
+        OrbitControls 控制相机的轨道。
+        本质上就是移动相机的位置和方向，因此必须编写 animate 函数来驱动相机的位置变化。
+        如果不驱动相机的位置变化，相机将永远不会动。
+        如果不想使用 animate 函数来驱动相机，可以监听 change 事件，然后手动更新相机的位置和方向。
+        controls.addEventListener('change', () => renderer.render(scene, camera)); // 监听 change 事件，渲染场景和相机
+        */
+
+        // 7. 添加动画
         const animate = function () {
             requestAnimationFrame(animate);
-            controls.update();// 如果你开启了阻尼效果 你必须在animate函数中调用 controls.update() 来更新相机的位置和方向，因为他要不断计算每一帧的效果 才能让相机动起来。
+            controls.update(); // 更新相机的位置和方向
             renderer.render(scene, camera);
         };
         animate();
-
-
-
-
     </script>
-
 </body>
 
 </html>
