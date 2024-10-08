@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--本节讲解 一个物体可以由多种材质组成，每个材质可以有自己的颜色、光照、纹理、透明度等属性。 -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cube_with_materials</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+        // 1. 创建场景
+        const scene = new THREE.Scene();
+
+        // 2. 创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 5, 5);
+        camera.lookAt(0, 0, 0);
+
+        // 3. 创建渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 4. 创建网格帮助器
+        const gridHelper = new THREE.GridHelper(100, 10);
+
+        // 5. 创建立方体的几何体
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+
+        // 6. 创建多个材质
+        const materials = [
+            new THREE.MeshBasicMaterial({ color: 0xff0000 }), // 前面 (红色)
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 }), // 后面 (绿色)
+            new THREE.MeshBasicMaterial({ color: 0x0000ff }), // 左面 (蓝色)
+            new THREE.MeshBasicMaterial({ color: 0xffff00 }), // 右面 (黄色)
+            new THREE.MeshBasicMaterial({ color: 0xff00ff }), // 上面 (紫色)
+            new THREE.MeshBasicMaterial({ color: 0x00ffff })  // 下面 (青色)
+        ];
+
+        // 7. 创建物体，使用材质数组
+        const mesh = new THREE.Mesh(geometry, materials);
+
+        // 8. 将物体和网格帮助器加入场景
+        scene.add(mesh, gridHelper);
+
+        // 9. 创建控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+
+        // 10. 将渲染器添加到页面中
+        document.body.appendChild(renderer.domElement);
+
+        // 11. 启用阻尼功能
+        controls.enableDamping = true;
+
+        // 12. 动画循环
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
+    </script>
+</body>
+
+</html>
