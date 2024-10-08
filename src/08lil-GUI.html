@@ -1,12 +1,11 @@
-<!-- lil-GUI[用于调整Threejs的属性 -->
-
+<!-- lil-gui适用于快速创建GUI的库，它可以自动生成控件，并将其绑定到变量上，可以方便地调整参数。 -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeshBasicMaterial&MeshStandardMaterial</title>
+    <title>MeshBasicMaterial & MeshStandardMaterial</title>
     <style>
         * {
             margin: 0;
@@ -25,7 +24,9 @@
 <body>
     <script type="module">
         import * as THREE from 'three';
-        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls 模块
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        import { GUI } from 'lil-gui'; // 导入 lil-gui
+
         const scene = new THREE.Scene();
 
         // 创建相机
@@ -36,6 +37,7 @@
         // 创建渲染器
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement); // 将渲染器的 DOM 元素添加到文档中
 
         // 创建网格帮助器
         const gridHelper = new THREE.GridHelper(100, 10, 0xff0000);
@@ -44,20 +46,18 @@
         const geometry = new THREE.SphereGeometry(2, 32, 32);
 
         // 创建光源
-        const ambientLight = new THREE.AmbientLight(0xffffff);// 环境光
-        const directionalLight = new THREE.DirectionalLight(0xffffff);//平行光
-        directionalLight.position.set(1, 0, 0); // 设置平行光的位置
+        const ambientLight = new THREE.AmbientLight(0xffffff);
+        const directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(1, 0, 0);
         scene.add(ambientLight, directionalLight);
 
         const loader = new THREE.TextureLoader();
         const texture = loader.load('./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg');
         const material = new THREE.MeshStandardMaterial({
-            map: texture,// 设置贴图
-            color: 0xffffff, // 设置颜色
-            emissive: 0xffffff, // 设置自发光颜色
-            roughness: 0.3, // 设置粗糙度
-            metalness: 0.5 // 设置金属度
-
+            map: texture,
+            color: 0xffffff,
+            roughness: 0.3,
+            metalness: 0.5
         });
 
         // 创建物体并加入场景
@@ -65,17 +65,51 @@
         scene.add(cube, gridHelper);
 
         // 创建控制器
-        const controls = new OrbitControls(camera, renderer.domElement); // 实例化 OrbitControls 对象
-        controls.enableDamping = true; // 开启阻尼功能
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
 
-        // 将渲染器的 DOM 元素添加到文档中
-        document.body.appendChild(renderer.domElement);
+        // 添加 lil-gui 控件
+        const gui = new GUI();
+        const materialFolder = gui.addFolder('材质属性');
+        materialFolder.addColor(material, 'color').name('颜色');
+        materialFolder.add(material, 'roughness', 0, 1, 0.01).name('粗糙度');
+        materialFolder.add(material, 'metalness', 0, 1, 0.01).name('金属度');
+        gui.add(cube.position, 'x', -5, 5, 0.01).name('x坐标');
+        gui.add(cube.position, 'y', -5, 5, 0.01).name('y坐标');
+        gui.add(cube.position, 'z', -5, 5, 0.01).name('z坐标');
+
+        // 添加全屏控制
+        const fullscreenOptions = {
+            toggleFullscreen: function () {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+        };
+
+        gui.add(fullscreenOptions, 'toggleFullscreen').name('切换全屏');
+
+
+        materialFolder.open();
+
+        // 自适应画布
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
 
         // 动画循环
         const animate = function () {
             requestAnimationFrame(animate);
-            controls.update(); // 更新控制器
-            renderer.render(scene, camera); // 渲染场景
+            controls.update();
+            renderer.render(scene, camera);
         };
 
         // 开始动画
