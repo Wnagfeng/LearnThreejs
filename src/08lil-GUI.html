@@ -1,5 +1,4 @@
-
-<!-- MeshBasicMaterial&MeshStandardMateria [物体的材质] 和光源的使用 -->
+<!-- lil-GUI[用于调整Threejs的属性 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,11 +26,6 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'; // 导入 OrbitControls 模块
-
-        /*
-        MeshBasicMaterial 设置的材质 他不受光照的影响 
-         */
-        // 创建场景
         const scene = new THREE.Scene();
 
         // 创建相机
@@ -55,24 +49,12 @@
         directionalLight.position.set(1, 0, 0); // 设置平行光的位置
         scene.add(ambientLight, directionalLight);
 
-        // ①加载纹理并创建材质[MeshBasicMaterial--不受光照影响]
-        // const loader = new THREE.TextureLoader();
-        // const texture = loader.load('./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg');
-        // const material = new THREE.MeshBasicMaterial({
-        //     map: texture // 设置贴图
-        // });
-
-        // ②加载纹理并创建材质[MeshStandardMaterial--受光照影响]
-        /*
-        我们在这是光照的时候我们可以使用  roughness metalness 两个属性来控制材质的光照效果 这样比较显眼一点
-        前提是你必须使用 MeshStandardMaterial 材质
-         */
         const loader = new THREE.TextureLoader();
         const texture = loader.load('./imgs/macOS-Big-Sur-Daylight-Wallpaper-iDownloadBlog.jpg');
         const material = new THREE.MeshStandardMaterial({
-            // map: texture,// 设置贴图
+            map: texture,// 设置贴图
             color: 0xffffff, // 设置颜色
-            // emissive: 0xffffff, // 设置自发光颜色
+            emissive: 0xffffff, // 设置自发光颜色
             roughness: 0.3, // 设置粗糙度
             metalness: 0.5 // 设置金属度
 
