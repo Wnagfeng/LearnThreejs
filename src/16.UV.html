@@ -1,0 +1,107 @@
+<html lang="en">
+<!--
+本文将讲解 Raycaster 的作用
+Raycaster 是 Three.js 中用来进行射线检测的工具。
+它可以通过摄像机和鼠标的当前位置发射一条射线，检测这条射线是否与场景中的物体相交。
+用人话说就是 我们在开发3D网页的时候他所有的东西都是绘制在Canvas上，这时候我们如果想实现点击某个东西实现对应的操作
+我们不能向以前那样获取dom 给dom添加事件，然后处理事件，我们现在需要通过Raycaster来实现类似于dom点击事件的效果
+这种点击效果的实现他需要你做一个转换，
+就是我们给dom添加事件我们获取的是屏幕的xy，我们在threejs中元素是绘制在xy轴上的，我们最终需要拿到一个xy坐标然后才能判断元素有没有被点击到。
+ -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raycaster</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        // 导入GLTFLoader器
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+        // 导入hdr加载器
+        import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+        // 导入DRACOLoader
+        import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+        // Base Code Start
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // 创建场景
+        const scene = new THREE.Scene();
+
+        // 创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(0, 10, 20); // 设置相机位置
+        camera.lookAt(0, 0, 0); // 让相机朝向原点
+
+        const gridHelper = new THREE.GridHelper(100, 10);
+        scene.add(gridHelper);
+
+
+        // 创建渲染器并设置背景为灰色
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 创建控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 动画循环
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
+        // Base Code End
+
+
+        // 创建两个平面并添加到场景
+        const plane1 = new THREE.Mesh(
+            new THREE.PlaneGeometry(5, 5),
+            new THREE.MeshBasicMaterial({
+                color: 0xffcc00,
+                side: THREE.DoubleSide // 使平面双面可见
+            })
+        );
+        plane1.rotation.x = -Math.PI / 2; // 将平面旋转，使其水平放置
+        scene.add(plane1);
+
+        const plane2 = new THREE.Mesh(
+            new THREE.PlaneGeometry(5, 5),
+            new THREE.MeshBasicMaterial({
+                color: 0x00ccff,
+                side: THREE.DoubleSide // 使平面双面可见
+            })
+        );
+        plane2.position.z = 2; // 调整平面位置
+        plane2.rotation.x = -Math.PI / 2; // 将平面旋转，使其水平放置
+        scene.add(plane2);
+
+
+    </script>
+</body>
+
+</html>
