@@ -1,0 +1,110 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLTF Loader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        // 导入GLTFLoader器
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+        // 导入hdr加载器
+        import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+        // 导入DRACOLoader
+        import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+        // Base Code Start
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+
+        // 创建场景
+        const scene = new THREE.Scene();
+
+        // 创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(0, 100, 150); // 设置相机位置
+        camera.lookAt(0, 0, 0); // 让相机朝向原点
+
+        // 创建雾
+        scene.fog = new THREE.Fog(0x999999, 0.1, 650);
+        scene.background = new THREE.Color(0x999999);
+
+        // 创建渲染器并设置背景为灰色
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 创建控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 动画循环
+        const animate = function () {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        };
+        animate();
+        // Base Code End
+
+
+
+        // 实例化GLTFLoader
+        const loader = new GLTFLoader();
+        // 加载模型
+        loader.load('./imgs/model/Duck.glb', function (gltf) {
+            const model = gltf.scene;
+            model.position.set(0, 0, 0);
+            model.scale.set(10, 10, 10);
+            scene.add(model);
+        }, undefined, function (error) {
+            console.error(error);
+        });
+        // 城市模型是被压缩的模型，所以我们需要使用解码器来解压加载
+        // 第一步找到 \node_modules\three\examples\jsm\libs\draco 把draco 文件拷贝到 你的静态资源目录下面
+        const dracoLoader = new DRACOLoader();
+        // 设置解码器路径
+        dracoLoader.setDecoderPath('./imgs/draco/');
+        // 设置解码器
+        loader.setDRACOLoader(dracoLoader);
+        loader.load('./imgs/model/city.glb', function (gltf) {
+            const model = gltf.scene;
+            // 调整模型的位置、缩放等
+            model.position.set(0, 0, 0);  // 确保模型在正确位置
+            model.scale.set(10, 10, 10);  // 适当调整缩放比例，防止模型过小或过大
+            scene.add(model);
+        });
+
+        // 5.5 加载环境贴图 这暂时用环境贴图
+        const envloader = new RGBELoader().load('./imgs/texture/watercover/Alex_Hart-Nature_Lab_Bones_2k.hdr', function (texture) {
+            texture.mapping = THREE.EquirectangularReflectionMapping;
+            scene.environment = texture;
+        });
+
+
+
+    </script>
+</body>
+
+</html>

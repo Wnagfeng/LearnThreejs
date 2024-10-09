@@ -1,10 +1,18 @@
 <html lang="en">
-<!-- 本节演示不同的贴图的作用 -->
+<!--
+本文将讲解 Raycaster 的作用
+Raycaster 是 Three.js 中用来进行射线检测的工具。
+它可以通过摄像机和鼠标的当前位置发射一条射线，检测这条射线是否与场景中的物体相交。
+用人话说就是 我们在开发3D网页的时候他所有的东西都是绘制在Canvas上，这时候我们如果想实现点击某个东西实现对应的操作
+我们不能向以前那样获取dom 给dom添加事件，然后处理事件，我们现在需要通过Raycaster来实现类似于dom点击事件的效果
+这种点击效果的实现他需要你做一个转换，
+就是我们给dom添加事件我们获取的是屏幕的xy，我们在threejs中元素是绘制在xy轴上的，我们最终需要拿到一个xy坐标然后才能判断元素有没有被点击到。
+ -->
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Texture Example</title>
+    <title>Raycaster</title>
     <style>
         * {
             margin: 0;
@@ -24,10 +32,13 @@
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        // 导入GLTFLoader器
+        import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
         // 导入hdr加载器
         import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-
-        // 0. 自适应画布
+        // 导入DRACOLoader
+        import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+        // Base Code Start
         window.addEventListener('resize', () => {
             const width = window.innerWidth;
             const height = window.innerHeight;
@@ -36,86 +47,102 @@
             camera.updateProjectionMatrix();
         });
 
-        // 1. 创建场景
+        // 创建场景
         const scene = new THREE.Scene();
 
-        // 2. 创建相机
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(100, 100, 110);
-        camera.lookAt(0, 0, 0);
+        // 创建相机
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.set(0, 10, 20); // 设置相机位置
+        camera.lookAt(0, 0, 0); // 让相机朝向原点
 
-        // 3. 创建渲染器
+        const gridHelper = new THREE.GridHelper(100, 10);
+        scene.add(gridHelper);
+
+
+        // 创建渲染器并设置背景为灰色
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 4. 创建网格帮助器
-        // const gridHelper = new THREE.GridHelper(100, 10);
-        // scene.add(gridHelper);
-
-        // 5. 创建物体并贴图
-        // 5.1 加载纹理贴图
-        const textureloader = new THREE.TextureLoader().load('./imgs/texture/watercover/CityNewYork002_COL_VAR1_1K.png');
-        textureloader.colorSpace = THREE.SRGBColorSpace; // 颜色空间转换(SRGB他能让颜色更加真实更符合人眼的感觉)
-        // textureloader.colorSpace = THREE.LinearSRGBColorSpace; // 颜色空间转换(LinearSRGB颜色空间会让颜色更加均匀)[默认采用这个但是不符合人眼的感觉]
-        // 总结如果你感觉色彩有差别你可以考虑一下是不是颜色空间的问题
-        // 5.2 加载AO贴图
-        const aoloader = new THREE.TextureLoader().load('./imgs/texture/watercover/CityNewYork002_AO_1K.jpg');
-        // 5.3 加载透明度贴图
-        const alphaloader = new THREE.TextureLoader().load('./imgs/texture/watercover/height.jpg');
-        // 5.4 加载光照贴图
-        const lightloader = new THREE.TextureLoader().load('./imgs/texture/watercover/colors.png');
-        // 5.5 加载环境贴图(环境贴图是hdr的所以我们需要使用hdr加载器来加载环境贴图)
-        const envloader = new RGBELoader().load('./imgs/texture/watercover/Alex_Hart-Nature_Lab_Bones_2k.hdr', function (texture) {
-            // 把环境贴图加载到场景中
-            scene.background = texture;
-            // 由于我加载了环境贴图他就直接作为背景添加了,我们需要告诉他你需要做一下映射,就是这个背景是个球形的,他是全景的,并不是一个平面的背景
-            texture.mapping = THREE.EquirectangularReflectionMapping;
-            /*
-            给场景设置环境贴图和给plane设置环境贴图
-            我感觉就是让物体在这个球形环境中反射光线和让平面也能反射光线
-            其实就是为了很真实效果的感觉! 
-             */
-            // 给场景设置环境贴图(目的就是为了让物体在这个球形环境中反射光线)
-            scene.environment = texture;
-            // 给plane设置环境贴图(目的是让平面也能反射光线)
-            planeMaterial.envMap = texture;
-            // 给plane设置反射率
-            planeMaterial.reflectivity = 0.5;
-        });
-        // 5.6 加载高光贴图
-        const specularloader = new THREE.TextureLoader().load('./imgs/texture/watercover/CityNewYork002_GLOSS_1K.jpg');
-
-        const planeGeometry = new THREE.PlaneGeometry(30, 30); // 适当增大平面的尺寸
-        const planeMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffffff, // 使用蓝色以便更明显
-            side: THREE.DoubleSide, // 两面可见
-            // 贴图分为：1. 纹理贴图 2. 颜色贴图 3. 环境贴图
-            // 要想贴图我们必须先使用纹理加载器加载图片，然后将其赋值给对应的属性
-            map: textureloader, // 纹理贴图
-            transparent: true, // 设置允许透明度(就是自动忽略不需要的地方)
-            aoMap: aoloader, // AO贴图
-            aoMapIntensity: 1, // AO贴图强度
-            // alphaMap: alphaloader, // 透明度贴图
-            // lightMap: lightloader, // 光照贴图
-            specularMap: specularloader, // 高光贴图
-
-        });
-        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        // plane.rotation.x = - Math.PI / 2; // 将平面旋转 90 度，使其面朝上
-        scene.add(plane);
-
-        // 6. 创建控制器
+        // 创建控制器
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
-        // 7. 动画循环
+        // 动画循环
         const animate = function () {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
         };
         animate();
+        // Base Code End
+
+
+        // 创建三个球 实现点击效果
+        const sphere1 = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 32, 32),
+            new THREE.MeshBasicMaterial({
+                color: 0x00ff00,
+            })
+        );
+        sphere1.position.x = -4;
+        scene.add(sphere1);
+
+        const sphere2 = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 32, 32),
+            new THREE.MeshBasicMaterial({
+                color: 0x0000ff,
+            })
+        );
+
+        scene.add(sphere2);
+
+        const sphere3 = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 32, 32),
+            new THREE.MeshBasicMaterial({
+                color: 0xff00ff,
+            })
+        );
+
+        sphere3.position.x = 4;
+        scene.add(sphere3);
+
+        // 创建射线
+        const raycaster = new THREE.Raycaster();
+        // 创建鼠标向量
+        const mouse = new THREE.Vector2();
+        window.addEventListener("click", (event) => {
+            console.log(event.clientX, event.clientY);
+            // 设置鼠标向量的x,y值
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -((event.clientY / window.innerHeight) * 2 - 1);
+
+            // console.log(mouse.x, mouse.y);
+            // 通过摄像机和鼠标位置更新射线
+            raycaster.setFromCamera(mouse, camera);
+
+            // 计算物体和射线的焦点
+            const intersects = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
+
+            if (intersects.length > 0) {
+                // console.log(intersects[0].object);
+                if (intersects[0].object._isSelect) {
+                    console.log(intersects[0].object._originColor);
+                    intersects[0].object.material.color.set(
+                        intersects[0].object._originColor
+                    );
+                    intersects[0].object._isSelect = false;
+                    return;
+                }
+
+                intersects[0].object._isSelect = true;
+                intersects[0].object._originColor =
+                    intersects[0].object.material.color.getHex();
+                intersects[0].object.material.color.set(0xff0000);
+            }
+
+            console.log(intersects);
+        });
     </script>
 </body>
 

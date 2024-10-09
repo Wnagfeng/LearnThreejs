@@ -209,3 +209,83 @@
 ### 总结
 
 贴图是3D图形中的重要元素，极大地增加了物体的视觉效果和真实感。理解不同类型的贴图及其用途，以及如何在Three.js中正确加载和应用它们，是实现高质量3D渲染的关键。
+
+### 4.Raycaster使用
+
+```
+本文将讲解 Raycaster 的作用 Raycaster 是 Three.js 中用来进行射线检测的工具。它可以通过摄像机和鼠标的当前位置发射一条射线，检测这条射线是否与场景中的物体相交。
+```
+
+```
+用人话说就是 我们在开发3D网页的时候他所有的东西都是绘制在Canvas上，这时候我们如果想实现点击某个东西实现对应的操作我们不能向以前那样获取dom 给dom添加事件，然后处理事件，我们现在需要通过Raycaster来实现类似于dom点击事件的效果,这种点击效果的实现他需要你做一个转换，就是我们给dom添加事件我们获取的是屏幕的xy，我们在threejs中元素是绘制在xy轴上的，我们最终需要拿到一个xy坐标然后才能判断元素有没有被点击到。
+```
+
+这个公式的作用是将鼠标在屏幕中的二维位置转换成 Three.js 的标准化设备坐标系（NDC, Normalized Device Coordinates）。下面是详细的解释：
+
+#### 1. **屏幕坐标系**：
+
+- 当你在网页上点击时，鼠标位置的坐标是相对于整个屏幕的，`event.clientX` 和 `event.clientY` 分别表示点击事件在浏览器窗口的 X 和 Y 方向上的像素位置。
+- 这些值的范围是从 `(0, 0)` 到 `(window.innerWidth, window.innerHeight)`，也就是说，左上角是 `(0, 0)`，右下角是 `(window.innerWidth, window.innerHeight)`。
+
+#### 2. **Three.js 的标准化设备坐标系（NDC）**：
+
+- Three.js 使用的坐标系统要求鼠标的位置在 [-1, 1] 的范围内，而不是屏幕像素值。这个坐标系叫做 NDC。
+  - 在 NDC 中：
+    - `x = -1` 是屏幕的最左边，`x = 1` 是最右边；
+    - `y = 1` 是屏幕的顶部，`y = -1` 是屏幕的底部。
+
+#### 3. **公式的推导**：
+
+- **X 方向**：
+
+  - 通过 
+
+    ```
+    event.clientX / window.innerWidth
+    ```
+
+    ，你将鼠标在屏幕上的横向位置转化为 [0, 1] 之间的值。
+
+    - 例如，`event.clientX` 为 0 时，表示鼠标在屏幕最左边，对应的值为 0。
+    - `event.clientX` 为 `window.innerWidth` 时，表示鼠标在屏幕最右边，对应的值为 1。
+
+  - 但是，NDC 要求 X 方向的范围是 [-1, 1]，所以你需要将 [0, 1] 映射到 [-1, 1]。这就通过公式 
+
+    ```
+    (event.clientX / window.innerWidth) * 2 - 1
+    ```
+
+     来实现：
+
+    - 当 `event.clientX = 0`，计算结果为 `-1`（屏幕最左边）；
+    - 当 `event.clientX = window.innerWidth`，计算结果为 `1`（屏幕最右边）。
+
+- **Y 方向**：
+
+  - Three.js 中的 Y 轴方向与屏幕的 Y 轴方向是相反的。屏幕的 Y 轴是从上到下递增，而 Three.js 的 Y 轴是从下到上递增。
+
+  - 因此，`event.clientY / window.innerHeight` 将屏幕上的纵向位置映射到 [0, 1]，但我们需要将它映射到 [-1, 1]，并且 Y 轴还要反向，所以需要加负号。
+
+  - 这就通过公式 
+
+    ```
+    -((event.clientY / window.innerHeight) * 2 - 1)
+    ```
+
+     实现：
+
+    - 当 `event.clientY = 0`，计算结果为 `1`（屏幕顶部）；
+    - 当 `event.clientY = window.innerHeight`，计算结果为 `-1`（屏幕底部）。
+
+#### 4. **总结公式**：
+
+```
+javascript复制代码mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+mouse.y = -((event.clientY / window.innerHeight) * 2 - 1);
+```
+
+- `mouse.x`：将屏幕的 X 坐标映射到 [-1, 1]。
+- `mouse.y`：将屏幕的 Y 坐标映射到 [-1, 1]，并且反向。
+
+这个公式是将鼠标的像素坐标转换成 NDC，方便使用 Three.js 中的射线投射（Raycasting）等功能，以判断鼠标点击了哪个 3D 对象。
+
